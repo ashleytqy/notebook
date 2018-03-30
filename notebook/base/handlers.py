@@ -636,15 +636,15 @@ class AuthenticatedFileHandler(IPythonHandler, web.StaticFileHandler):
         # disable browser caching, rely on 304 replies for savings
         if "v" not in self.request.arguments:
             self.add_header("Cache-Control", "no-cache")
-    
+
     def compute_etag(self):
-        return None
-    
+        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+
     def validate_absolute_path(self, root, absolute_path):
         """Validate and return the absolute path.
-        
+
         Requires tornado 3.1
-        
+
         Adding to tornado's own handling, forbids the serving of hidden files.
         """
         abs_path = super(AuthenticatedFileHandler, self).validate_absolute_path(root, absolute_path)
@@ -688,31 +688,31 @@ HTTPError = web.HTTPError
 
 class FileFindHandler(IPythonHandler, web.StaticFileHandler):
     """subclass of StaticFileHandler for serving files from a search path"""
-    
+
     # cache search results, don't search for files more than once
     _static_paths = {}
-    
+
     def set_headers(self):
         super(FileFindHandler, self).set_headers()
         # disable browser caching, rely on 304 replies for savings
         if "v" not in self.request.arguments or \
                 any(self.request.path.startswith(path) for path in self.no_cache_paths):
             self.set_header("Cache-Control", "no-cache")
-    
+
     def initialize(self, path, default_filename=None, no_cache_paths=None):
         self.no_cache_paths = no_cache_paths or []
-        
+
         if isinstance(path, string_types):
             path = [path]
-        
+
         self.root = tuple(
             os.path.abspath(os.path.expanduser(p)) + os.sep for p in path
         )
         self.default_filename = default_filename
-    
+
     def compute_etag(self):
-        return None
-    
+        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+
     @classmethod
     def get_absolute_path(cls, roots, path):
         """locate a file to serve on our static file search path"""
